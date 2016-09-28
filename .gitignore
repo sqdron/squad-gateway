@@ -16,9 +16,34 @@ _test
 _cgo_defun.c
 _cgo_gotypes.go
 _cgo_export.*
+*.json
 
 _testmain.go
+
+*app.json
 
 *.exe
 *.test
 *.prof
+
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+
+.idea/
+bower_components/
+node_modules/
+/typings
+dist/
+
+# Sensitive or high-churn files:
+.idea/dataSources.ids
+.idea/dataSources.xml
+.idea/dataSources.local.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+
+
