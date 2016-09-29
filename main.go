@@ -19,8 +19,18 @@ type Message struct {
 }
 
 func (p *GateMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL.Path)
+	if (r.Method == "GET"){
+		fmt.Fprintf(w, "Access denied for method GET!")
+		return
+	}
 
+	auth:= r.Header.Get("Authorization");
+	if (auth == "") {
+		fmt.Fprintf(w, "Access denied !")
+		return
+	}
+
+	log.Println(r.URL.Path + auth)
 	nc, _ := nats.Connect(p.Url)
 	ec, _ := nats.NewEncodedConn(nc, nats.JSON_ENCODER)
 	defer ec.Close()
@@ -30,6 +40,7 @@ func (p *GateMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ec.BindSendChan("hello", sendCh)
 
 	sendCh <- m
+	fmt.Fprintf(w, "success")
 	nc.Close()
 	return
 }
