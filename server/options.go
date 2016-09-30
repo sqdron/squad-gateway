@@ -1,8 +1,8 @@
 package server
 
 type Options struct {
-	Url               	string        `json:"addr"`
-	//Port               int           `json:"port"`
+	Url               string        `json:"url" option:"Service Endpoint Url"`
+	//Port              int           `json:"port"`
 	//Trace              bool          `json:"-"`
 	//Debug              bool          `json:"-"`
 	//NoLog              bool          `json:"-"`
@@ -10,7 +10,7 @@ type Options struct {
 	//Logtime            bool          `json:"-"`
 	//MaxConn            int           `json:"max_connections"`
 	//Users              []*User       `json:"-"`
-	//Username           string        `json:"-"`
+	//Username           string        `json:"-"`ç
 	//Password           string        `json:"-"`
 	//Authorization      string        `json:"-"`
 	//PingInterval       time.Duration `json:"ping_interval"`

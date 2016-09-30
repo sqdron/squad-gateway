@@ -4,10 +4,9 @@ import (
 	"log"
 	"net/http"
 	"fmt"
-	"flag"
-	"strings"
 	"github.com/sqdron/squad-gateway/server"
 	"github.com/nats-io/nats"
+	"github.com/sqdron/squad/configurator"
 )
 
 type GateMux struct {
@@ -46,19 +45,12 @@ func (p *GateMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	opts := server.Options{}
-	flag.StringVar(&opts.Url, "url", "localhost", "Port to listen on.")
-	flag.Parse()
-	for _, arg := range flag.Args() {
-		switch strings.ToLower(arg) {
-		case "version":
-			log.Println("1.0.0")
-		case "help":
-			flag.Usage()
-		}
-	}
 
-	log.Println(opts.Url)
+	opts := &server.Options{}
+
+	cfg := configurator.New()
+	cfg.ReadFlags(opts)
+
 	nc, _ := nats.Connect(opts.Url)
 
 	ec, _ := nats.NewEncodedConn(nc, nats.JSON_ENCODER)
