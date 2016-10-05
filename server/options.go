@@ -1,8 +1,8 @@
 package server
 
 type Options struct {
-	Url               string        `json:"url" option:"Service Endpoint Url"`
-	//Port              int           `json:"port"`
+	ApplicationID string        `json:"app_id" optoin:"Application Identity (http://sqdron.io)"`
+	Hub           string        `json:"app_endpoint" option:"Service Endpoint Url"`
 	//Trace              bool          `json:"-"`
 	//Debug              bool          `json:"-"`
 	//NoLog              bool          `json:"-"`
