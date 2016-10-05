@@ -14,14 +14,14 @@ type GateMux struct {
 }
 
 type TokenRequest struct {
-	ClientId     string
-	ClientSecret string   //     `json:"client_secret"`
-	Code         string   // `json:"code"`
-	RedirectUrl  string //`json:"redirect_url"`
+				 //	ClientId     string
+				 //	ClientSecret string   //     `json:"client_secret"`
+	State string
+	Code  string // `json:"code"`
 }
 
 type TokenResponce struct {
-	url    string
+	url string
 }
 
 func (p *GateMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -38,9 +38,9 @@ func (p *GateMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var path = r.URL.Path[1: len(r.URL.Path)]
 	log.Println("Url... " + path)
 
-	req := &TokenRequest{ClientId:"12345", ClientSecret:"sertgyty", Code:"1", RedirectUrl:"http://sqdron.io"}
+	req := &TokenRequest{Code:"", State:""}
 	nt := nats.NatsEndpoint(p.Url)
-	resp :=  <- nt.Request(path, req)
+	resp := <-nt.Request(path, req)
 	fmt.Println("Got responce")
 	fmt.Println(resp)
 	nt.Close()
