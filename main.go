@@ -5,42 +5,45 @@ import (
 	"github.com/sqdron/squad/activation"
 	"net/http"
 	"log"
-	"fmt"
 	"github.com/nats-io/nats"
-	"encoding/json"
+	"github.com/sqdron/squad/connect"
 	"time"
 )
 
 func main() {
 	squad := squad.Client()
 	squad.Activate(func(i activation.ServiceInfo) {
-		connect, _ := nats.Connect(i.Endpoint)
-		http.ListenAndServe(":4000", &SquadMux{connect})
+		con, e := nats.Connect(i.Endpoint)
+		if (e != nil) {
+			panic(e)
+		}
+		c := connect.NewTransport(i.Endpoint)
+		http.ListenAndServe(":4000", &SquadMux{connect:con, c:c})
 	})
 }
 
 type SquadMux struct {
 	connect *nats.Conn
+	c       connect.ITransport
 }
 
 func (s *SquadMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	request := map[string]string{}
 	var path = r.URL.Path[1: len(r.URL.Path)]
-	fmt.Println(r)
-	log.Printf("Route to %s \n", path)
-
 	if (r.Method == http.MethodGet) {
 		for k, v := range r.URL.Query() {
 			request[k] = v[0]
 		}
 	}
 	log.Printf("Requesting %s with params %s\n", path, request)
+	res, e := s.c.RequestSync(path, request, 1 * time.Second)
+	if (e != nil ) {
 
-	data, encodeError := json.Marshal(request)
-	if (encodeError != nil) {
-		panic(encodeError)
+		http.Error(w, e.Error(), http.StatusInternalServerError)
+		log.Println(e)
 	}
 
-	res, _ := s.connect.Request("get_auth_url", data, 10 * time.Millisecond)
-	log.Printf("Requestis %s \n", res)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(res.([]byte))
+	w.WriteHeader(http.StatusOK)
 }
