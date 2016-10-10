@@ -23,6 +23,7 @@ func main() {
 
 	squad := squad.Client()
 	squad.Activate(func(i activation.ServiceInfo) {
+		println("Listening http on port :8080")
 		http.ListenAndServe(":8080", &SquadMux{Options:op, Connect:connect.NewTransport(i.Endpoint)})
 	})
 }
