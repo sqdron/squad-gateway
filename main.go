@@ -23,7 +23,7 @@ func main() {
 
 	squad := squad.Client()
 	squad.Activate(func(i activation.ServiceInfo) {
-		http.ListenAndServe(":4000", &SquadMux{Options:op, Connect:connect.NewTransport(i.Endpoint)})
+		http.ListenAndServe(":8080", &SquadMux{Options:op, Connect:connect.NewTransport(i.Endpoint)})
 	})
 }
 
