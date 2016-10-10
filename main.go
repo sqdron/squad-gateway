@@ -47,6 +47,8 @@ func (s *SquadMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	r.ParseForm()
+
 	request := map[string]string{}
 	var path = r.URL.Path[1: len(r.URL.Path)]
 	if (r.Method == http.MethodGet) {
@@ -54,6 +56,11 @@ func (s *SquadMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			request[k] = v[0]
 		}
 	}
+
+	for key, values := range r.Form {
+		request[key] = values[0]
+	}
+
 	log.Printf("Requesting %s with params %s\n", path, request)
 	res, e := s.Connect.RequestSync(path, request, 1 * time.Second)
 	if (e != nil ) {
@@ -62,8 +69,8 @@ func (s *SquadMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Println(e)
 		return
 	}
-
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Add("Accept", "application/json")
 	w.Write(res.([]byte))
 	w.WriteHeader(http.StatusOK)
 }
