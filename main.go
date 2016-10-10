@@ -19,7 +19,7 @@ func main() {
 	op := &GatewayOptions{}
 
 	//TODO: this data should be loaded from hab
-	configurator.New().ReadFromFile("gateway.json", &op)
+	configurator.New().ReadFromFile("app.json", &op)
 
 	squad := squad.Client()
 	squad.Activate(func(i activation.ServiceInfo) {
