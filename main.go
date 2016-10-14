@@ -8,6 +8,7 @@ import (
 	"github.com/sqdron/squad/connect"
 	"time"
 	"strings"
+	"fmt"
 )
 
 type GatewayOptions struct {
@@ -18,6 +19,7 @@ func main() {
 	op := &GatewayOptions{}
 	//TODO: this data should be loaded from hab
 	squad := squad.Client(op)
+	fmt.Println(op)
 	squad.Activate(func(i activation.ServiceInfo) {
 		println("Listening http on port :8080")
 		http.ListenAndServe(":8080", &SquadMux{Options:op, Connect:connect.NatsTransport(i.Endpoint)})
