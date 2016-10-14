@@ -7,24 +7,20 @@ import (
 	"log"
 	"github.com/sqdron/squad/connect"
 	"time"
-	"github.com/sqdron/squad/configurator"
 	"strings"
 )
 
 type GatewayOptions struct {
-	AuthToken string `json:"auth_token"`
+	Auth string
 }
 
 func main() {
 	op := &GatewayOptions{}
-
 	//TODO: this data should be loaded from hab
-	configurator.New().ReadFromFile("app.json", &op)
-
-	squad := squad.Client()
+	squad := squad.Client(op)
 	squad.Activate(func(i activation.ServiceInfo) {
 		println("Listening http on port :8080")
-		http.ListenAndServe(":8080", &SquadMux{Options:op, Connect:connect.NewTransport(i.Endpoint)})
+		http.ListenAndServe(":8080", &SquadMux{Options:op, Connect:connect.NatsTransport(i.Endpoint)})
 	})
 }
 
@@ -38,7 +34,7 @@ func (s *SquadMux) checkAuth(r *http.Request) bool {
 	if len(auth) != 2 {
 		return false
 	}
-	return auth[1] == s.Options.AuthToken
+	return auth[1] == s.Options.Auth
 }
 
 //TODO: Refactor usin middleware approach
@@ -73,7 +69,6 @@ func (s *SquadMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		request[key] = values[0]
 	}
 
-	log.Printf("Requesting %s with params %s\n", path, request)
 	res, e := s.Connect.RequestSync(path, request, 1 * time.Second)
 	if (e != nil ) {
 
