@@ -12,6 +12,7 @@ import (
 
 type GatewayOptions struct {
 	Auth string
+	Port string
 }
 
 func main() {
@@ -19,8 +20,8 @@ func main() {
 	//TODO: this data should be loaded from hab
 	squad := squad.Client(op)
 	squad.Activate(func(i activation.ServiceInfo) {
-		println("Listening http on port :8080")
-		http.ListenAndServe(":8080", &SquadMux{Options:op, Connect:connect.NatsTransport(i.Endpoint)})
+		println("Listening http on port :" + op.Port)
+		http.ListenAndServe(":" + op.Port, &SquadMux{Options:op, Connect:connect.NatsTransport(i.Endpoint)})
 	})
 }
 
@@ -41,12 +42,16 @@ func (s *SquadMux) checkAuth(r *http.Request) bool {
 func (s *SquadMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if origin := r.Header.Get("Origin"); origin != "" {
 		w.Header().Set("Access-Control-Allow-Origin", origin)
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Methods", "POST")
 		w.Header().Set("Access-Control-Allow-Headers",
 			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	}
-	// Stop here if its Preflighted OPTIONS request
 	if r.Method == "OPTIONS" {
+		return
+	}
+
+	if (r.Method != http.MethodPost) {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -58,21 +63,25 @@ func (s *SquadMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	request := map[string]string{}
-	var path = r.URL.Path[1: len(r.URL.Path)]
-	if (r.Method == http.MethodGet) {
-		for k, v := range r.URL.Query() {
-			request[k] = v[0]
-		}
+
+	subject := r.Form.Get("subject")
+	if (subject == "") {
+		subject = r.URL.Path[1: len(r.URL.Path)]
+	}
+
+	if (subject == "") {
+		http.Error(w, http.ErrNotSupported.Error(), http.StatusBadRequest)
+
+		return
 	}
 
 	for key, values := range r.Form {
 		request[key] = values[0]
 	}
 
-	res, e := s.Connect.RequestSync(path, request, 1 * time.Second)
+	res, e := s.Connect.RequestSync(subject, request, 1 * time.Second)
 	if (e != nil ) {
-
-		http.Error(w, e.Error(), http.StatusInternalServerError)
+		http.Error(w, e.Error(), http.StatusBadRequest)
 		log.Println(e)
 		return
 	}
