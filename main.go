@@ -79,7 +79,7 @@ func (s *SquadMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		request[key] = values[0]
 	}
 
-	res, e := s.Connect.RequestSync(subject, request, 1 * time.Second)
+	res, e := s.Connect.RequestSync(subject, request, 3 * time.Second)
 	if (e != nil ) {
 		http.Error(w, e.Error(), http.StatusBadRequest)
 		log.Println(e)
